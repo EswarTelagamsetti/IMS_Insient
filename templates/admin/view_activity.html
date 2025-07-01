@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}View Activity - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Employee Activity</h1>
+    <form method="get" class="form-inline">
+        <label for="date">Choose Date:</label>
+        <input type="date" id="date" name="date" class="form-control mx-2"
+               value="{{ selected_date }}">
+        <button type="submit" class="btn btn-primary">View</button>
+    </form>
+</div>
+
+<div class="card mt-4">
+    {% if activity_data %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Active Hours</th>
+                <th>Last Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in activity_data %}
+            <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.role|title }}</td>
+                <td>{{ user.active_hours }} hrs</td>
+                <td>{{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <h3>No activity found for this date</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

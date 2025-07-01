@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Apply Leave - Insient{% endblock %}
+
+{% block extra_css %}
+<style>
+.leave-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.date-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.leave-summary {
+    background: #f8f9ff;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Apply for Leave</h1>
+    <p class="page-subtitle">Submit your leave application for admin approval</p>
+</div>
+
+<div class="card leave-form">
+    <form method="POST">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" class="date-input" required min="{{ today }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" class="date-input" required min="{{ today }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="reason">Reason for Leave (Optional)</label>
+            <textarea id="reason" name="reason" class="form-control" rows="4" 
+                      placeholder="Please mention the reason for your leave..."></textarea>
+        </div>
+        
+        <div class="leave-summary" id="leave-summary" style="display: none;">
+            <h4>Leave Summary</h4>
+            <p><strong>Duration:</strong> <span id="duration"></span></p>
+            <p><strong>From:</strong> <span id="summary-start"></span></p>
+            <p><strong>To:</strong> <span id="summary-end"></span></p>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Submit Leave Application
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">My Leave Applications</h2>
+    </div>
+    
+    {% if leave_applications %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Duration</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leave_applications %}
+                    <tr>
+                        <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ (leave.end_date - leave.start_date).days + 1 }} day(s)</td>
+                        <td>{{ leave.reason or 'No reason provided' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if leave.status == 'approved' %}badge-success
+                                {% elif leave.status == 'rejected' %}badge-danger
+                                {% else %}badge-warning{% endif %}">
+                                {{ leave.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ leave.applied_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-alt"></i>
+            <h3>No leave applications</h3>
+            <p>You haven't applied for any leave yet</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    const summary = document.getElementById('leave-summary');
+    
+    function updateSummary() {
+        if (startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
+            
+            if (end >= start) {
+                const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                
+                document.getElementById('duration').textContent = duration + ' day(s)';
+                document.getElementById('summary-start').textContent = start.toLocaleDateString();
+                document.getElementById('summary-end').textContent = end.toLocaleDateString();
+                
+                summary.style.display = 'block';
+            } else {
+                summary.style.display = 'none';
+            }
+        } else {
+            summary.style.display = 'none';
+        }
+    }
+    
+    startDate.addEventListener('change', function() {
+        endDate.min = this.value;
+        updateSummary();
+    });
+    
+    endDate.addEventListener('change', updateSummary);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Completed Works - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Completed Works</h1>
+    <p class="page-subtitle">Works you have completed</p>
+</div>
+
+<div class="card">
+    {% if works %}
+        {% for work in works %}
+        <div class="ticket-card admin-ticket">
+            <div class="ticket-header">
+                <h3 class="ticket-title">{{ work.title }}</h3>
+                <span class="badge badge-success">Completed</span>
+            </div>
+            
+            <div class="ticket-meta">
+                <div class="ticket-meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>From: {{ work.raised_by_name }}</span>
+                </div>
+                <div class="ticket-meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Assigned: {{ work.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="ticket-meta-item">
+                    <i class="fas fa-check"></i>
+                    <span>Completed: {{ work.completed_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+            
+            <div class="ticket-description">
+                {{ work.description }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-double"></i>
+            <h3>No completed works</h3>
+            <p>You haven't completed any works yet</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

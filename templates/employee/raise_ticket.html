@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Raise Ticket - Insient{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Raise Ticket</h1>
+    <p class="page-subtitle">Create and assign work tickets to available colleagues</p>
+</div>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="title">Ticket Title</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="5" required
+                      placeholder="Provide detailed description of the work to be done..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="user-search">Search Available Colleagues</label>
+            <input type="text" id="user-search" class="form-control" placeholder="Type to search available colleagues...">
+            <input type="hidden" id="assigned_to" name="assigned_to" required>
+            <div id="user-list" class="user-list"></div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Raise Ticket
+        </button>
+    </form>
+</div>
+
+<script>
+// Load available employees when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const userSearch = document.getElementById('user-search');
+    const userList = document.getElementById('user-list');
+    
+    userSearch.addEventListener('input', function() {
+        if (this.value.length >= 2) {
+            fetch('/employee/get_available_employees')
+                .then(response => response.json())
+                .then(users => {
+                    const filteredUsers = users.filter(user => 
+                        user.name.toLowerCase().includes(this.value.toLowerCase()) ||
+                        user.email.toLowerCase().includes(this.value.toLowerCase())
+                    );
+                    displayUsers(filteredUsers);
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            userList.innerHTML = '';
+        }
+    });
+});
+</script>
+{% endblock %}

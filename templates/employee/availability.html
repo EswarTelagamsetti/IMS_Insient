@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Availability - Insient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Availability Status</h1>
+    <p class="page-subtitle">Manage your availability for receiving new work assignments</p>
+</div>
+
+<div class="availability-toggle">
+    <div class="toggle-label">
+        {% if user.is_available %}
+            You are currently <strong style="color: #28a745;">AVAILABLE</strong> for new work
+        {% else %}
+            You are currently <strong style="color: #dc3545;">UNAVAILABLE</strong> for new work
+        {% endif %}
+    </div>
+    
+    <form method="POST" style="display: flex; align-items: center; gap: 1rem;">
+        <label class="toggle-switch">
+            <input type="checkbox" name="is_available" {% if user.is_available %}checked{% endif %} onchange="this.form.submit()">
+            <span class="slider"></span>
+        </label>
+        <span class="toggle-status">{{ 'Available' if user.is_available else 'Unavailable' }}</span>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Availability Guidelines</h2>
+    </div>
+    
+    <div class="card-content">
+        <ul>
+            <li><strong>Available:</strong> You can receive new work assignments from colleagues and admin</li>
+            <li><strong>Unavailable:</strong> You won't receive new work assignments</li>
+            <li><strong>Auto-Inactive:</strong> If you're inactive for more than 48 hours, admin will be notified</li>
+            <li><strong>Best Practice:</strong> Update your status when you start/finish work or take breaks</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

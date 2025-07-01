@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Add Participant - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Add Participant</h1>
+    <p class="page-subtitle">Add new employees, interns, or admins to the system</p>
+</div>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" class="form-control" required>
+                <option value="">Select Role</option>
+                <option value="employee">Employee</option>
+                <option value="intern">Intern</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="branch_id">Branch</label>
+            <select id="branch_id" name="branch_id" class="form-control" required>
+                <option value="">Select Branch</option>
+                {% for branch in branches %}
+                    <option value="{{ branch.id }}">{{ branch.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="work_type">Work Type</label>
+            <select id="work_type" name="work_type" class="form-control" required>
+                <option value="office">Office</option>
+                <option value="remote">Remote</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="experience">Experience (Optional)</label>
+            <input type="text" id="experience" name="experience" class="form-control" 
+                   placeholder="e.g., 2 years, 6 months, 0 (for fresh)">
+            <small class="form-text text-muted">
+                Leave empty for fresh candidates. Format: "2 years", "6 months", etc.
+            </small>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Add Participant
+        </button>
+    </form>
+</div>
+{% endblock %}

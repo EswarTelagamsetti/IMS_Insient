@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}All Employees - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">All Employees</h1>
+    <p class="page-subtitle">View and manage all employees and interns</p>
+</div>
+
+<div class="filter-section">
+    <form method="GET" class="filter-row">
+        <div class="filter-group">
+            <label for="search">Search</label>
+            <input type="text" id="search" name="search" class="form-control" 
+                   placeholder="Search by name or email..." 
+                   value="{{ request.args.get('search', '') }}">
+        </div>
+        
+        <div class="filter-group">
+            <label for="branch_id">Branch</label>
+            <select id="branch_id" name="branch_id" class="form-control">
+                <option value="">All Branches</option>
+                {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if request.args.get('branch_id') == branch.id|string %}selected{% endif %}>
+                        {{ branch.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" class="form-control">
+                <option value="">All Roles</option>
+                <option value="employee" {% if request.args.get('role') == 'employee' %}selected{% endif %}>Employee</option>
+                <option value="intern" {% if request.args.get('role') == 'intern' %}selected{% endif %}>Intern</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a href="{{ url_for('admin.all_employees') }}" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    {% if employees %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Branch</th>
+                        <th>Work Type</th>
+                        <th>Tickets Solved</th>
+                        <th>Status</th>
+                        <th>Last Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee.name }}</td>
+                        <td>{{ employee.email }}</td>
+                        <td>
+                            <span class="badge {% if employee.role == 'employee' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ employee.role|title }}
+                            </span>
+                        </td>
+                        <td>{{ employee.branch_name or 'N/A' }}</td>
+                        <td>{{ employee.work_type|title }}</td>
+                        <td>{{ employee.tickets_solved }}</td>
+                        <td>
+                            <span class="badge {% if employee.is_available %}badge-success{% else %}badge-danger{% endif %}">
+                                {% if employee.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ employee.last_active.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No employees found</h3>
+            <p>No employees match your current filter criteria</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

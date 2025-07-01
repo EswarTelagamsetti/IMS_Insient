@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Applications - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Leave Applications</h1>
+    <p class="page-subtitle">Review and manage employee leave applications</p>
+</div>
+
+<div class="filter-section">
+    <form method="GET" class="filter-row">
+        <div class="filter-group">
+            <label for="status">Status</label>
+            <select id="status" name="status" class="form-control">
+                <option value="">All Status</option>
+                <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="branch_id">Branch</label>
+            <select id="branch_id" name="branch_id" class="form-control">
+                <option value="">All Branches</option>
+                {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if request.args.get('branch_id') == branch.id|string %}selected{% endif %}>
+                        {{ branch.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a href="{{ url_for('admin.leave_applications') }}" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    {% if leave_applications %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Branch</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Duration</th>
+                        <th>Reason</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leave_applications %}
+                    <tr>
+                        <td>
+                            <strong>{{ leave.employee_name }}</strong><br>
+                            <small>{{ leave.employee_email }}</small>
+                        </td>
+                        <td>{{ leave.branch_name or 'N/A' }}</td>
+                        <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ (leave.end_date - leave.start_date).days + 1 }} day(s)</td>
+                        <td>
+                            {% if leave.reason %}
+                                <div class="reason-text">{{ leave.reason }}</div>
+                            {% else %}
+                                <em>No reason provided</em>
+                            {% endif %}
+                        </td>
+                        <td>{{ leave.applied_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if leave.status == 'approved' %}badge-success
+                                {% elif leave.status == 'rejected' %}badge-danger
+                                {% else %}badge-warning{% endif %}">
+                                {{ leave.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if leave.status == 'pending' %}
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.review_leave', leave_id=leave.id, action='approve') }}" 
+                                       class="btn btn-success btn-sm confirm-action"
+                                       data-confirm="Are you sure you want to approve this leave application?">
+                                        <i class="fas fa-check"></i> Approve
+                                    </a>
+                                    <a href="{{ url_for('admin.review_leave', leave_id=leave.id, action='reject') }}" 
+                                       class="btn btn-danger btn-sm confirm-action"
+                                       data-confirm="Are you sure you want to reject this leave application?">
+                                        <i class="fas fa-times"></i> Reject
+                                    </a>
+                                </div>
+                            {% else %}
+                                <span class="text-muted">
+                                    {% if leave.reviewed_at %}
+                                        Reviewed on {{ leave.reviewed_at.strftime('%Y-%m-%d') }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-check"></i>
+            <h3>No leave applications</h3>
+            <p>No leave applications match your current filter criteria</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.reason-text {
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-group .btn {
+    flex: 1;
+}
+</style>
+{% endblock %}

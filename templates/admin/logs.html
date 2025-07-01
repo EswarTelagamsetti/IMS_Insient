@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Logs Monitoring - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Logs Monitoring</h1>
+    <p class="page-subtitle">Monitor all ticket activities across branches</p>
+</div>
+
+<div class="filter-section">
+    <form method="GET" class="filter-row">
+        <div class="filter-group">
+            <label for="branch_id">Branch</label>
+            <select id="branch_id" name="branch_id" class="form-control">
+                <option value="">All Branches</option>
+                {% for branch in branches %}
+                    <option value="{{ branch.id }}" {% if request.args.get('branch_id') == branch.id|string %}selected{% endif %}>
+                        {{ branch.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="filter">Filter</label>
+            <select id="filter" name="filter" class="form-control">
+                <option value="all" {% if request.args.get('filter') == 'all' %}selected{% endif %}>All</option>
+                <option value="completed" {% if request.args.get('filter') == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="pending" {% if request.args.get('filter') == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="this_week" {% if request.args.get('filter') == 'this_week' %}selected{% endif %}>This Week</option>
+                <option value="last_week" {% if request.args.get('filter') == 'last_week' %}selected{% endif %}>Last Week</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    {% if tickets %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Raised By</th>
+                        <th>Assigned To</th>
+                        <th>Branch</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ ticket.title }}</td>
+                        <td>{{ ticket.description[:50] }}{% if ticket.description|length > 50 %}...{% endif %}</td>
+                        <td>{{ ticket.raised_by_name }}</td>
+                        <td>{{ ticket.assigned_to_name }}</td>
+                        <td>{{ ticket.branch_name or 'N/A' }}</td>
+                        <td>
+                            <span class="badge {% if ticket.status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
+                                {{ ticket.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if ticket.completed_at %}
+                                {{ ticket.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-list-alt"></i>
+            <h3>No tickets found</h3>
+            <p>No tickets match your current filter criteria</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

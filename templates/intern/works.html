@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Works to Do - Insient{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Works to Do</h1>
+    <p class="page-subtitle">Work assigned to you by admin</p>
+</div>
+
+<div class="card">
+    {% if works %}
+        {% for work in works %}
+        <div class="ticket-card admin-ticket" data-ticket-id="{{ work.id }}" data-status="{{ work.status }}">
+            <div class="ticket-header">
+                <h3 class="ticket-title">{{ work.title }}</h3>
+                <span class="badge badge-danger">Admin</span>
+            </div>
+            
+            <div class="ticket-meta">
+                <div class="ticket-meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>From: {{ work.raised_by_name }}</span>
+                </div>
+                <div class="ticket-meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ work.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            </div>
+            
+            <div class="ticket-description">
+                {{ work.description }}
+            </div>
+            
+            <div class="ticket-actions">
+                <a href="{{ url_for('intern.complete_work', work_id=work.id) }}" 
+                   class="btn btn-success confirm-action"
+                   data-confirm="Are you sure you want to mark this work as completed?">
+                    <i class="fas fa-check"></i> Mark as Completed
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-tasks"></i>
+            <h3>No pending works</h3>
+            <p>You don't have any pending work assignments</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

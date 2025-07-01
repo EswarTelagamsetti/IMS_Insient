@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Tickets Raised - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Tickets Raised</h1>
+    <p class="page-subtitle">View tickets you have raised and their status</p>
+</div>
+
+<div class="card">
+    {% if tickets %}
+        {% for ticket in tickets %}
+        <div class="ticket-card employee-ticket" data-ticket-id="{{ ticket.id }}" data-status="{{ ticket.status }}">
+            <div class="ticket-header">
+                <h3 class="ticket-title">{{ ticket.title }}</h3>
+                <span class="badge {% if ticket.status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
+                    {{ ticket.status|title }}
+                </span>
+            </div>
+            
+            <div class="ticket-meta">
+                <div class="ticket-meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>Assigned to: {{ ticket.assigned_to_name }}</span>
+                </div>
+                <div class="ticket-meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Created: {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                {% if ticket.completed_at %}
+                <div class="ticket-meta-item">
+                    <i class="fas fa-check"></i>
+                    <span>Completed: {{ ticket.completed_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="ticket-description">
+                {{ ticket.description }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-paper-plane"></i>
+            <h3>No tickets raised</h3>
+            <p>You haven't raised any tickets yet</p>
+            <a href="{{ url_for('employee.raise_ticket') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Raise Your First Ticket
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

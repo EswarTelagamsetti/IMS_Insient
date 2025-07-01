@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Ticket - Insient{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Assign Ticket</h1>
+    <p class="page-subtitle">Create and assign work tickets to employees or interns</p>
+</div>
+
+<div class="card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="title">Ticket Title</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="5" required
+                      placeholder="Provide detailed description of the work to be done..."></textarea>
+        </div>
+        
+        <div class="filter-section">
+            <h3>Filter Users</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="branch-filter">Branch</label>
+                    <select id="branch-filter" class="form-control">
+                        <option value="">All Branches</option>
+                        {% for branch in branches %}
+                            <option value="{{ branch.id }}">{{ branch.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="work-type-filter">Work Type</label>
+                    <select id="work-type-filter" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="office">Office</option>
+                        <option value="remote">Remote</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="role-filter">Role</label>
+                    <select id="role-filter" class="form-control">
+                        <option value="">All Roles</option>
+                        <option value="employee">Employee</option>
+                        <option value="intern">Intern</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="available-only"> Available Only
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="user-search">Search and Select User</label>
+            <input type="text" id="user-search" class="form-control" placeholder="Type to search users...">
+            <input type="hidden" id="assigned_to" name="assigned_to" required>
+            <div id="user-list" class="user-list"></div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-ticket-alt"></i> Assign Ticket
+        </button>
+    </form>
+</div>
+{% endblock %}

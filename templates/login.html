@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Insient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Insient" class="login-logo">
+            <h1>Insient Management System</h1>
+            <p>Please select your role and login</p>
+        </div>
+
+        <form method="POST" class="login-form">
+            <div class="role-selector">
+                <label class="role-option">
+                    <input type="radio" name="role" value="admin" required>
+                    <span class="role-card">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin</span>
+                    </span>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="employee" required>
+                    <span class="role-card">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Employee</span>
+                    </span>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="intern" required>
+                    <span class="role-card">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Intern</span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group branch-field" style="display: none;">
+                <label for="branch">Branch</label>
+                <select id="branch" name="branch">
+                    <option value="">Select Branch</option>
+                    {% for branch in branches %}
+                        <option value="{{ branch.name }}">{{ branch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const branchField = document.querySelector('.branch-field');
+    const branchSelect = document.getElementById('branch');
+
+    roleInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value === 'admin') {
+                branchField.style.display = 'none';
+                branchSelect.removeAttribute('required');
+            } else {
+                branchField.style.display = 'block';
+                branchSelect.setAttribute('required', 'required');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

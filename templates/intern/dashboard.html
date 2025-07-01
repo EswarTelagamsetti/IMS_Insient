@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Intern Dashboard - Insient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="dashboard-title">Intern Dashboard</h1>
+    <p class="dashboard-subtitle">Welcome back, {{ session.name }}! Complete your assigned work efficiently.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stat-number">{{ pending_works }}</div>
+        <div class="stat-label">Pending Works</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-double"></i>
+        </div>
+        <div class="stat-number">{{ completed_works }}</div>
+        <div class="stat-label">Completed Works</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-building"></i>
+        </div>
+        <div class="stat-number">{{ session.branch_name }}</div>
+        <div class="stat-label">Branch</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="stat-number">Intern</div>
+        <div class="stat-label">Role</div>
+    </div>
+</div>
+
+<div class="quick-actions">
+    <a href="{{ url_for('intern.profile') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="action-title">View Profile</div>
+    </a>
+    
+    <a href="{{ url_for('intern.works') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-tasks"></i>
+        </div>
+        <div class="action-title">Works to Do</div>
+    </a>
+    
+    <a href="{{ url_for('intern.completed_works') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-check-double"></i>
+        </div>
+        <div class="action-title">Completed Works</div>
+    </a>
+    
+    <a href="{{ url_for('intern.reset_password') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-key"></i>
+        </div>
+        <div class="action-title">Reset Password</div>
+    </a>
+</div>
+{% endblock %}

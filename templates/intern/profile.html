@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Insient{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">View your profile information and statistics</p>
+</div>
+
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ user.name[0].upper() }}
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.name }}</h2>
+            <div class="profile-role">{{ user.role|title }}</div>
+        </div>
+    </div>
+    
+    <div class="profile-details">
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Email</h4>
+                <p>{{ user.email }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Branch</h4>
+                <p>{{ user.branch_name or 'N/A' }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-briefcase"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Work Type</h4>
+                <p>{{ user.work_type|title }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Works Completed</h4>
+                <p>{{ user.tickets_solved }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Experience</h4>
+                <p class="experience-display" data-start-date="{{ user.experience_start_date }}">{{ experience }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="detail-content">
+                <h4>Last Active</h4>
+                <p>{{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

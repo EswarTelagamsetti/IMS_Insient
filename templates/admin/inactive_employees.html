@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Inactive Employees - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Inactive Employees</h1>
+    <p class="page-subtitle">Employees who haven't been active for more than 48 hours</p>
+</div>
+
+<div class="card">
+    {% if inactive_users %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Branch</th>
+                        <th>Last Active</th>
+                        <th>Inactive Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in inactive_users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'employee' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ user.role|title }}
+                            </span>
+                        </td>
+                        <td>{{ user.branch_name or 'N/A' }}</td>
+                        <td>{{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% set hours_inactive = ((moment().utcnow() - user.last_active).total_seconds() / 3600)|int %}
+                            {% if hours_inactive >= 24 %}
+                                {{ (hours_inactive / 24)|int }} days, {{ hours_inactive % 24 }} hours
+                            {% else %}
+                                {{ hours_inactive }} hours
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-check"></i>
+            <h3>All employees are active!</h3>
+            <p>No employees have been inactive for more than 48 hours</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

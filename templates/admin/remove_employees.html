@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Remove Employees - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Remove Employees</h1>
+    <p class="page-subtitle">Remove employees or interns from the system</p>
+</div>
+
+<div class="card">
+    {% if users %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Branch</th>
+                        <th>Tickets Solved</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'employee' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ user.role|title }}
+                            </span>
+                        </td>
+                        <td>{{ user.branch_name or 'N/A' }}</td>
+                        <td>{{ user.tickets_solved }}</td>
+                        <td>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm confirm-action"
+                                        data-confirm="Are you sure you want to remove {{ user.name }}? This action cannot be undone.">
+                                    <i class="fas fa-user-minus"></i> Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No users found</h3>
+            <p>No employees or interns to remove</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
