@@ -1,6 +1,6 @@
 Flask
 Flask-MySQLdb
-mysqlclient
+PyMySQL
 Werkzeug
 python-dotenv
 gunicorn
