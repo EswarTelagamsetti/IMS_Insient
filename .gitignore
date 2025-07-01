@@ -1,0 +1,63 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+*.env
+
+# VSCode / IDE settings
+.vscode/
+.idea/
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python egg files
+*.egg-info/
+*.egg
+
+# Pip
+pip-log.txt
+
+# SQLite (if accidentally used)
+*.sqlite3
+
+# Pytest
+.pytest_cache/
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+
+# Logs
+*.log
+
+# Compiled source
+build/
+dist/
+*.so
+
+# Railway generated files
+railway.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Flask specific
+instance/
+*.db
+
+# Optional: Ignore __init__.py if dynamically generated
+# __init__.py
