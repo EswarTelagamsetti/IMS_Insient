@@ -3,3 +3,4 @@ Flask-MySQLdb
 mysqlclient
 Werkzeug
 python-dotenv
+gunicorn
