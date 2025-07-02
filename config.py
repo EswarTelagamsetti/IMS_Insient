@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'insient-secret-key-2024'
+    SECRET_KEY = os.environ.get('SECRET_KEY') 
     
     # MySQL Configuration
     MYSQL_PORT = int(os.environ.get('MYSQL_PORT', '3306'))
