@@ -1,43 +1,49 @@
-from flask_mysqldb import MySQL
+import pymysql
 from datetime import datetime, timedelta
 
 class Database:
-    def __init__(self, mysql):
-        self.mysql = mysql
-    
-    def get_cursor(self):
-        return self.mysql.connection.cursor()
-    
-    def commit(self):
-        self.mysql.connection.commit()
-    
-    def close_cursor(self, cursor):
-        cursor.close()
+    def __init__(self, app):
+        self.app = app
+
+    def get_connection(self):
+        return pymysql.connect(
+            host=self.app.config['DB_HOST'],
+            user=self.app.config['DB_USER'],
+            password=self.app.config['DB_PASSWORD'],
+            database=self.app.config['DB_NAME'],
+            cursorclass=pymysql.cursors.DictCursor
+        )
+
 
 class User:
-    def __init__(self, db):
+    def __init__(self, db: Database):
         self.db = db
-    
+
     def create_user(self, name, email, password, role, branch_id, work_type, experience_start_date):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO users (name, email, password, role, branch_id, work_type, experience_start_date)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (name, email, password, role, branch_id, work_type, experience_start_date))
-        self.db.commit()
+        conn.commit()
         user_id = cursor.lastrowid
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return user_id
-    
+
     def get_user_by_email(self, email):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return user
-    
+
     def get_user_by_id(self, user_id):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("""
             SELECT u.*, b.name as branch_name 
             FROM users u 
@@ -45,36 +51,39 @@ class User:
             WHERE u.id = %s
         """, (user_id,))
         user = cursor.fetchone()
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return user
-    
+
     def update_availability(self, user_id, is_available):
         now = datetime.now()
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
 
-        #Insert into activity_logs
         cursor.execute("""
             INSERT INTO activity_logs (user_id, status, timestamp)
             VALUES (%s, %s, %s)
         """, (user_id, is_available, now))
 
-        #Update user's current status
         cursor.execute("""
             UPDATE users SET is_available = %s, last_active = %s WHERE id = %s
         """, (is_available, now, user_id))
 
-        self.db.commit()
-        self.db.close_cursor(cursor)
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-    
     def update_last_active(self, user_id):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("UPDATE users SET last_active = %s WHERE id = %s", (datetime.now(), user_id))
-        self.db.commit()
-        self.db.close_cursor(cursor)
-    
+        conn.commit()
+        cursor.close()
+        conn.close()
+
     def get_inactive_users(self):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         inactive_time = datetime.now() - timedelta(hours=48)
         cursor.execute("""
             SELECT u.*, b.name as branch_name 
@@ -83,51 +92,63 @@ class User:
             WHERE u.last_active < %s AND u.role != 'admin'
         """, (inactive_time,))
         users = cursor.fetchall()
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return users
 
+
 class Branch:
-    def __init__(self, db):
+    def __init__(self, db: Database):
         self.db = db
-    
+
     def create_branch(self, name):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("INSERT INTO branches (name) VALUES (%s)", (name,))
-        self.db.commit()
+        conn.commit()
         branch_id = cursor.lastrowid
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return branch_id
-    
+
     def get_all_branches(self):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM branches ORDER BY name")
         branches = cursor.fetchall()
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return branches
-    
+
     def delete_branch(self, branch_id):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("DELETE FROM branches WHERE id = %s", (branch_id,))
-        self.db.commit()
-        self.db.close_cursor(cursor)
+        conn.commit()
+        cursor.close()
+        conn.close()
+
 
 class Ticket:
-    def __init__(self, db):
+    def __init__(self, db: Database):
         self.db = db
-    
+
     def create_ticket(self, title, description, raised_by, assigned_to):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO tickets (title, description, raised_by, assigned_to)
             VALUES (%s, %s, %s, %s)
         """, (title, description, raised_by, assigned_to))
-        self.db.commit()
+        conn.commit()
         ticket_id = cursor.lastrowid
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return ticket_id
-    
+
     def get_user_tickets(self, user_id, status=None):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         if status:
             cursor.execute("""
                 SELECT t.*, u1.name as raised_by_name, u2.name as assigned_to_name
@@ -147,20 +168,22 @@ class Ticket:
                 ORDER BY t.created_at DESC
             """, (user_id,))
         tickets = cursor.fetchall()
-        self.db.close_cursor(cursor)
+        cursor.close()
+        conn.close()
         return tickets
-    
+
     def complete_ticket(self, ticket_id):
-        cursor = self.db.get_cursor()
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
         cursor.execute("""
             UPDATE tickets SET status = 'completed', completed_at = %s WHERE id = %s
         """, (datetime.now(), ticket_id))
-        self.db.commit()
-        
-        # Update tickets solved count
+        conn.commit()
+
         cursor.execute("""
             UPDATE users SET tickets_solved = tickets_solved + 1 
             WHERE id = (SELECT assigned_to FROM tickets WHERE id = %s)
         """, (ticket_id,))
-        self.db.commit()
-        self.db.close_cursor(cursor)
+        conn.commit()
+        cursor.close()
+        conn.close()

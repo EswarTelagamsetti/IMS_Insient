@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g
 import pymysql
 from datetime import datetime
 
@@ -6,14 +6,12 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    from app import mysql
-
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         role = request.form['role']
 
-        cursor = mysql.connection.cursor(pymysql.cursors.DictCursor)
+        cursor = g.db.cursor(pymysql.cursors.DictCursor)
 
         if role == 'admin':
             cursor.execute('SELECT * FROM users WHERE email = %s AND role = %s', (email, role))
@@ -26,7 +24,7 @@ def login():
                 session['role'] = user['role']
 
                 cursor.execute('UPDATE users SET last_active = %s WHERE id = %s', (datetime.now(), user['id']))
-                mysql.connection.commit()
+                g.db.commit()
 
                 cursor.close()
                 return redirect(url_for('admin.dashboard'))
@@ -52,7 +50,7 @@ def login():
                 session['branch_name'] = user['branch_name']
 
                 cursor.execute('UPDATE users SET last_active = %s WHERE id = %s', (datetime.now(), user['id']))
-                mysql.connection.commit()
+                g.db.commit()
 
                 cursor.close()
                 if role == 'employee':
@@ -65,7 +63,7 @@ def login():
         cursor.close()
 
     # Get branches for dropdown
-    cursor = mysql.connection.cursor(pymysql.cursors.DictCursor)
+    cursor = g.db.cursor(pymysql.cursors.DictCursor)
     cursor.execute('SELECT * FROM branches ORDER BY name')
     branches = cursor.fetchall()
     cursor.close()
