@@ -5,20 +5,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import os
 
-# Load .env file
+# Load .env variables
 load_dotenv()
 
-# Flask app setup
+# ---------- Flask App Setup ----------
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SECRET_KEY", "default_secret_key")
 
-# ---------- Database Setup using PyMySQL ----------
+# ---------- Database Connection ----------
 def get_db_connection():
     return pymysql.connect(
-        host=os.getenv("MYSQL_HOST"),
-        user=os.getenv("MYSQL_USER"),
-        password=os.getenv("MYSQL_PASSWORD"),
-        database=os.getenv("MYSQL_DB"),
+        host=os.getenv("MYSQL_HOST", "localhost"),
+        user=os.getenv("MYSQL_USER", "root"),
+        password=os.getenv("MYSQL_PASSWORD", ""),
+        database=os.getenv("MYSQL_DB", "your_db_name"),
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -29,8 +29,8 @@ def before_request():
 
 @app.teardown_request
 def teardown_request(exception):
-    db = g.pop('db', None)
     cursor = g.pop('cursor', None)
+    db = g.pop('db', None)
     if cursor:
         cursor.close()
     if db:
@@ -63,6 +63,6 @@ app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(employee_bp, url_prefix='/employee')
 app.register_blueprint(intern_bp, url_prefix='/intern')
 
-# ---------- Run App ----------
+# ---------- Run the App ----------
 if __name__ == '__main__':
     app.run(debug=True)

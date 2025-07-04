@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, g
-from datetime import datetime, timedelta
+from datetime import datetime
 from utils.helpers import calculate_experience
 from utils.decorators import employee_required
-from database.models import User, Database
 
 employee_bp = Blueprint('employee', __name__)
 
@@ -38,15 +37,14 @@ def profile():
 @employee_bp.route('/availability', methods=['GET', 'POST'])
 @employee_required
 def availability():
-    user_model = User(Database(g.db))
-
+    cursor = g.cursor
     if request.method == 'POST':
         is_available = request.form.get('is_available') == 'on'
-        user_model.update_availability(session['user_id'], is_available)
+        cursor.execute("UPDATE users SET is_available = %s WHERE id = %s", (is_available, session['user_id']))
+        g.db.commit()
         flash(f'Availability status updated to {"available" if is_available else "unavailable"}!', 'success')
         return redirect(url_for('employee.availability'))
 
-    cursor = g.cursor
     cursor.execute('SELECT is_available FROM users WHERE id = %s', (session['user_id'],))
     user = cursor.fetchone()
     return render_template('employee/availability.html', user=user)
@@ -59,11 +57,9 @@ def raise_ticket():
         title = request.form['title']
         description = request.form['description']
         assigned_to = request.form['assigned_to']
-
         cursor.execute("INSERT INTO tickets (title, description, raised_by, assigned_to) VALUES (%s, %s, %s, %s)", 
                        (title, description, session['user_id'], assigned_to))
         g.db.commit()
-
         flash('Ticket raised successfully!', 'success')
         return redirect(url_for('employee.raise_ticket'))
 
@@ -102,7 +98,6 @@ def complete_ticket(ticket_id):
                    (datetime.now(), ticket_id, session['user_id']))
     cursor.execute("UPDATE users SET tickets_solved = tickets_solved + 1 WHERE id = %s", (session['user_id'],))
     g.db.commit()
-
     flash('Ticket marked as completed!', 'success')
     return redirect(url_for('employee.tickets'))
 
@@ -156,7 +151,6 @@ def reset_password():
 
         cursor.execute('UPDATE users SET password = %s WHERE id = %s', (new_password, session['user_id']))
         g.db.commit()
-
         flash('Password updated successfully!', 'success')
         return redirect(url_for('employee.reset_password'))
 
@@ -198,7 +192,7 @@ def apply_leave():
         flash('Leave application submitted successfully!', 'success')
         return redirect(url_for('employee.apply_leave'))
 
-    # Mark leave notifications as read
+    # Mark notifications as read
     cursor.execute("""
         UPDATE leave_applications 
         SET employee_notification_read = TRUE 
