@@ -12,17 +12,6 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-# Register Blueprints
-from routes.auth import auth_bp
-from routes.admin import admin_bp
-from routes.employee import employee_bp
-from routes.intern import intern_bp
-
-app.register_blueprint(auth_bp, url_prefix='/auth')
-app.register_blueprint(admin_bp, url_prefix='/admin')
-app.register_blueprint(employee_bp, url_prefix='/employee')
-app.register_blueprint(intern_bp, url_prefix='/intern')
-
 # ---------- Database Setup using PyMySQL ----------
 def get_db_connection():
     return pymysql.connect(
@@ -62,6 +51,17 @@ def index():
 @app.context_processor
 def inject_user():
     return dict(session=session)
+
+# ---------- Register Blueprints ----------
+from routes.auth import auth_bp
+from routes.admin import admin_bp
+from routes.employee import employee_bp
+from routes.intern import intern_bp
+
+app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(employee_bp, url_prefix='/employee')
+app.register_blueprint(intern_bp, url_prefix='/intern')
 
 # ---------- Run App ----------
 if __name__ == '__main__':
