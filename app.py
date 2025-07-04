@@ -65,4 +65,4 @@ app.register_blueprint(intern_bp, url_prefix='/intern')
 
 # ---------- Run the App ----------
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

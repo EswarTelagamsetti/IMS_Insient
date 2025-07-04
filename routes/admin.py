@@ -236,7 +236,6 @@ def all_employees():
 
     return render_template('admin/all_employees.html', employees=employees, branches=branches)
 
-
 @admin_bp.route('/view_activity')
 @admin_required
 def view_activity():
@@ -246,8 +245,8 @@ def view_activity():
     else:
         selected_date = datetime.now().date()
 
-    start_range = selected_date - timedelta(days=1)
-    end_range = selected_date + timedelta(days=1)
+    start_range = datetime.combine(selected_date, datetime.min.time())
+    end_range = datetime.combine(selected_date, datetime.max.time())
 
     g.cursor.execute("""
         SELECT al.user_id, u.name, u.role, al.status, al.timestamp
@@ -255,7 +254,7 @@ def view_activity():
         JOIN users u ON al.user_id = u.id
         WHERE al.timestamp BETWEEN %s AND %s
         ORDER BY al.user_id, al.timestamp
-    """, (start_range, end_range))
+    """, (start_range - timedelta(days=1), end_range))
 
     logs = g.cursor.fetchall()
     user_sessions = defaultdict(list)
@@ -273,20 +272,20 @@ def view_activity():
             ts = entry['timestamp']
             status = entry['status']
             if status == 1:
-                if session_start is None:
-                    session_start = ts
+                session_start = ts if session_start is None else session_start
             elif status == 0 and session_start:
-                session_start_clipped = max(session_start, datetime.combine(selected_date, datetime.min.time()))
-                end_clipped = min(ts, datetime.combine(selected_date, datetime.max.time()))
-                if session_start_clipped < end_clipped:
-                    active_time += end_clipped - session_start_clipped
+                clipped_start = max(session_start, start_range)
+                clipped_end = min(ts, end_range)
+                if clipped_start < clipped_end:
+                    active_time += clipped_end - clipped_start
                 session_start = None
 
+        # If still active session at day end
         if session_start:
-            session_start_clipped = max(session_start, datetime.combine(selected_date, datetime.min.time()))
-            end_clipped = min(datetime.now(), datetime.combine(selected_date, datetime.max.time()))
-            if session_start_clipped < end_clipped:
-                active_time += end_clipped - session_start_clipped
+            clipped_start = max(session_start, start_range)
+            clipped_end = min(datetime.now(), end_range)
+            if clipped_start < clipped_end:
+                active_time += clipped_end - clipped_start
 
         if active_time.total_seconds() > 0:
             activity_data.append({
@@ -299,6 +298,7 @@ def view_activity():
     return render_template('admin/view_activity.html',
                            selected_date=selected_date,
                            activity_data=activity_data)
+
 
 
 @admin_bp.route('/remove_employees', methods=['GET', 'POST'])
