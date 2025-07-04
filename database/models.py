@@ -60,11 +60,13 @@ class User:
         conn = self.db.get_connection()
         cursor = conn.cursor()
 
+        # ✅ Ensure status is stored as 1 (True) or 0 (False)
         cursor.execute("""
             INSERT INTO activity_logs (user_id, status, timestamp)
             VALUES (%s, %s, %s)
-        """, (user_id, is_available, now))
+        """, (user_id, int(is_available), now))
 
+        # ✅ Update availability and last_active timestamp
         cursor.execute("""
             UPDATE users SET is_available = %s, last_active = %s WHERE id = %s
         """, (is_available, now, user_id))
