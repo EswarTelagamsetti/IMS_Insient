@@ -30,7 +30,7 @@
                             <td>{{ user.branch_name or 'N/A' }}</td>
                             <td>{{ user.created_on.strftime('%Y-%m-%d') if user.created_on else 'N/A' }}</td>
                             <td>
-                                <form method="POST" action="{{ url_for('admin.remove_admin') }}" style="display: inline;">
+                                <form method="POST" action="{{ url_for('admin.remove_admins') }}" style="display: inline;">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <button type="submit" class="btn btn-danger btn-sm confirm-action"
                                             data-confirm="Are you absolutely sure you want to remove {{ user.name }} from admin role?">
