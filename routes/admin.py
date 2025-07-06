@@ -236,6 +236,7 @@ def all_employees():
 
     return render_template('admin/all_employees.html', employees=employees, branches=branches)
 
+
 @admin_bp.route('/view_activity')
 @admin_required
 def view_activity():
@@ -245,8 +246,8 @@ def view_activity():
     else:
         selected_date = datetime.now().date()
 
-    start_range = datetime.combine(selected_date, datetime.min.time())
-    end_range = datetime.combine(selected_date, datetime.max.time())
+    start_range = selected_date - timedelta(days=1)
+    end_range = selected_date + timedelta(days=1)
 
     g.cursor.execute("""
         SELECT al.user_id, u.name, u.role, al.status, al.timestamp
@@ -254,7 +255,7 @@ def view_activity():
         JOIN users u ON al.user_id = u.id
         WHERE al.timestamp BETWEEN %s AND %s
         ORDER BY al.user_id, al.timestamp
-    """, (start_range - timedelta(days=1), end_range))
+    """, (start_range, end_range))
 
     logs = g.cursor.fetchall()
     user_sessions = defaultdict(list)
@@ -272,20 +273,20 @@ def view_activity():
             ts = entry['timestamp']
             status = entry['status']
             if status == 1:
-                session_start = ts if session_start is None else session_start
+                if session_start is None:
+                    session_start = ts
             elif status == 0 and session_start:
-                clipped_start = max(session_start, start_range)
-                clipped_end = min(ts, end_range)
-                if clipped_start < clipped_end:
-                    active_time += clipped_end - clipped_start
+                session_start_clipped = max(session_start, datetime.combine(selected_date, datetime.min.time()))
+                end_clipped = min(ts, datetime.combine(selected_date, datetime.max.time()))
+                if session_start_clipped < end_clipped:
+                    active_time += end_clipped - session_start_clipped
                 session_start = None
 
-        # If still active session at day end
         if session_start:
-            clipped_start = max(session_start, start_range)
-            clipped_end = min(datetime.now(), end_range)
-            if clipped_start < clipped_end:
-                active_time += clipped_end - clipped_start
+            session_start_clipped = max(session_start, datetime.combine(selected_date, datetime.min.time()))
+            end_clipped = min(datetime.now(), datetime.combine(selected_date, datetime.max.time()))
+            if session_start_clipped < end_clipped:
+                active_time += end_clipped - session_start_clipped
 
         if active_time.total_seconds() > 0:
             activity_data.append({
@@ -298,7 +299,6 @@ def view_activity():
     return render_template('admin/view_activity.html',
                            selected_date=selected_date,
                            activity_data=activity_data)
-
 
 
 @admin_bp.route('/remove_employees', methods=['GET', 'POST'])
@@ -400,3 +400,56 @@ def review_leave(leave_id, action):
 
     flash(f'Leave application {status} successfully!', 'success')
     return redirect(url_for('admin.leave_applications'))
+
+@admin_bp.route('/view_admins')
+@admin_required
+def view_admins():
+    search = request.args.get('search')
+    query = "SELECT * FROM users WHERE role = 'admin'"
+    params = []
+
+    if search:
+        query += " AND (name LIKE %s OR email LIKE %s)"
+        search_term = f"%{search}%"
+        params.extend([search_term, search_term])
+
+    query += " ORDER BY name"
+    g.cursor.execute(query, params)
+    admins = g.cursor.fetchall()
+
+    return render_template('admin/view_admins.html', admins=admins)
+
+@admin_bp.route('/remove_admins', methods=['GET', 'POST'])
+@admin_required
+def remove_admins():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+
+        # Prevent self-deletion
+        if int(user_id) == session['user_id']:
+            flash("You can't remove yourself!", 'error')
+            return redirect(url_for('admin.remove_admins'))
+
+        # Double check the user is actually an admin
+        g.cursor.execute("SELECT * FROM users WHERE id = %s AND role = 'admin'", (user_id,))
+        user = g.cursor.fetchone()
+        if not user:
+            flash('Invalid admin user or already removed.', 'error')
+            return redirect(url_for('admin.remove_admins'))
+
+        g.cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        g.db.commit()
+        flash(f"Admin '{user['name']}' removed successfully!", 'success')
+        return redirect(url_for('admin.remove_admins'))
+
+    # Fetch all admins except the one currently logged in
+    g.cursor.execute("""
+        SELECT u.*, b.name as branch_name 
+        FROM users u 
+        LEFT JOIN branches b ON u.branch_id = b.id 
+        WHERE u.role = 'admin' AND u.id != %s
+        ORDER BY u.name
+    """, (session['user_id'],))
+    admins = g.cursor.fetchall()
+
+    return render_template('admin/remove_admins.html', users=admins)

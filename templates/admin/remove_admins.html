@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Remove Admins - Insient{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Remove Admins</h1>
+    <p class="page-subtitle">Caution: Removing admins will revoke their access to admin privileges</p>
+</div>
+
+<div class="card">
+    {% if users %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Branch</th>
+                        <th>Created On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        {% if user.role == 'admin' and user.id != session['user_id'] %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.branch_name or 'N/A' }}</td>
+                            <td>{{ user.created_on.strftime('%Y-%m-%d') if user.created_on else 'N/A' }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin.remove_admin') }}" style="display: inline;">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm confirm-action"
+                                            data-confirm="Are you absolutely sure you want to remove {{ user.name }} from admin role?">
+                                        <i class="fas fa-user-shield-slash"></i> Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state text-center p-5">
+            <i class="fas fa-user-shield fa-3x text-muted mb-3"></i>
+            <h4>No other admins found</h4>
+            <p>You're the only admin left.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -80,6 +80,19 @@
 
                 <div class="sidebar-section">
                     <div class="sidebar-section-title">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Management</span>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="{{ url_for('admin.view_admins') }}"><i class="fas fa-user-cog"></i><span>View Admin</span></a></li>
+                    </ul>
+                    <ul class="sidebar-menu">
+                        <li><a href="{{ url_for('admin.remove_admins') }}"><i class="fas fa-user-slash"></i><span>Remove Admin</span></a></li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">
                         <i class="fas fa-cog"></i>
                         <span>System Settings</span>
                     </div>
