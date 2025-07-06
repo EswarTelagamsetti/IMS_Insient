@@ -40,11 +40,23 @@ def availability():
     cursor = g.cursor
     if request.method == 'POST':
         is_available = request.form.get('is_available') == 'on'
+        print(f"Updating availability to {is_available} for user {session['user_id']}")
         cursor.execute("UPDATE users SET is_available = %s WHERE id = %s", (is_available, session['user_id']))
+        try:
+            cursor.execute("""
+                INSERT INTO activity_logs (user_id, status, timestamp)
+                VALUES (%s, %s, %s)
+            """, (session['user_id'], 1 if is_available else 0, datetime.now()))
+            g.db.commit()
+            print("Activity log inserted successfully.")
+        except Exception as e:
+            print(f"Insert failed: {e}")
+            
         g.db.commit()
         flash(f'Availability status updated to {"available" if is_available else "unavailable"}!', 'success')
         return redirect(url_for('employee.availability'))
 
+    # Fetch current availability status
     cursor.execute('SELECT is_available FROM users WHERE id = %s', (session['user_id'],))
     user = cursor.fetchone()
     return render_template('employee/availability.html', user=user)
